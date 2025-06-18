@@ -33,6 +33,7 @@ async def cmd_start(message: types.Message):
 @dp.message(F.text.contains(","))
 async def var_1(message: types.Message):
     await message.reply("записано")
+    print(type(message.text))
 
 @dp.message(F.text.contains("ввести ключевые слова для поиска"))
 async def var_1(message: types.Message):
