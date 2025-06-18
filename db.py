@@ -10,10 +10,12 @@ class PubMedSearch(Base):
     __tablename__ = "search_config"
  
     id = Column(Integer, primary_key=True)
+    user_id = Column(Integer)
     query_words = Column(String)  
  
     
-    def __init__(self, name):
-        self.name = name    
+    def __init__(self, user_id, query_words):
+        self.user_id = user_id
+        self.query_words = query_words    
 
 Base.metadata.create_all(engine)

@@ -3,9 +3,12 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
+from sqlalchemy.orm import Session
 from aiogram import F
 from dotenv import load_dotenv
 import os
+from db import engine, PubMedSearch
+
 
 load_dotenv()
 
@@ -34,14 +37,26 @@ async def cmd_start(message: types.Message):
 async def var_1(message: types.Message):
     await message.reply("записано")
     print(type(message.text))
+    add_query(int(message.from_user.id), message.text)
+    print('done')
 
 @dp.message(F.text.contains("ввести ключевые слова для поиска"))
 async def var_1(message: types.Message):
     await message.reply("введите ключевые слова", reply_markup=types.ReplyKeyboardRemove())
+    print(message.from_user.id)
+   
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
     await dp.start_polling(bot)
+
+
+def add_query(user, query):
+    with Session(engine) as session:
+        query_record = PubMedSearch(user_id=user, query_words=query)
+        session.add(query_record)
+        session.commit()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
