@@ -13,10 +13,7 @@ from pubmed_search import search, fetch_details
 
 
 scheduler = AsyncIOScheduler()
-
 load_dotenv()
-
-
 logging.basicConfig(level=logging.INFO)
 
 bot = Bot(token=os.getenv('BOT_TOKEN'))
@@ -81,8 +78,8 @@ async def send_message_to_user(user_id):
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    #shedule_jobs() # call func of sheduling
-    #scheduler.start() # start here
+    shedule_jobs() # call func of sheduling
+    scheduler.start() # start here
     
     await dp.start_polling(bot)
 
@@ -93,11 +90,13 @@ async def main():
 
 @dp.message()
 async def send_mes_test(dp: Dispatcher):
-    await bot.send_message(chat_id=5497349882, text='message by shedule')
+    q_words = get_query(message.from_user.id) # new
+    await bot.send_message(chat_id=5497349882, text='message by shedule') # old
+    await bot.send_message(chat_id=5497349882, text=q_words)
 
 
 def shedule_jobs():
-    scheduler.add_job(send_mes_test, 'interval', seconds=5, args=(dp,))    
+    scheduler.add_job(send_mes_test, 'interval', minutes=2, args=(dp,))    
 
 #############################
 # db methods
