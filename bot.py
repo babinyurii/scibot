@@ -8,7 +8,7 @@ import os
 from db import engine, PubMedSearch, get_query, add_query
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pubmed_search import search, fetch_details
-
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 scheduler = AsyncIOScheduler()
 load_dotenv()
@@ -20,18 +20,30 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    kb = [
-        [
-        types.KeyboardButton(text="ввести ключевые слова для поиска"),
-        # types.KeyboardButton(text="вариант 2"),
-        ],
-    ]
-    keyboard = types.ReplyKeyboardMarkup(keyboard=kb,  
-                                        resize_keyboard=True,
-                                        input_field_placeholder="нажмите на кнопку ниже")
-    await message.answer("выберите вариант действий", reply_markup=keyboard, )
+
+    builder = InlineKeyboardBuilder()
+    builder.add(types.InlineKeyboardButton(
+        text='ввести поисковые слова',
+        callback_data='query_words'
+    ))
+
+    await message.answer(
+        'нажмите на кнопку, чтоб ввести поисковые слова',
+        reply_markup=builder.as_markup()
+    )
 
 
+@dp.callback_query(F.data == "query_words")
+async def send_random_value(callback: types.CallbackQuery):
+    await callback.message.answer(str(randint(1, 10)))
+
+
+
+
+
+
+
+#################################3
 @dp.message(F.text.contains("ввести ключевые слова для поиска"))
 async def var_1(message: types.Message):
     await message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", 
@@ -77,8 +89,8 @@ def shedule_jobs():
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    shedule_jobs() # call func of sheduling
-    scheduler.start() # start here
+    #shedule_jobs() # call func of sheduling
+    #scheduler.start() # start here
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
