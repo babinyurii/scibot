@@ -9,11 +9,10 @@ from dotenv import load_dotenv
 import os
 from db import engine, PubMedSearch
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from pubmed_search import search, fetch_details
+
 
 scheduler = AsyncIOScheduler()
-
-
-
 
 load_dotenv()
 
@@ -37,6 +36,7 @@ async def cmd_start(message: types.Message):
                                         input_field_placeholder="нажмите на кнопку ниже, чтоб выбрать вариант")
     await message.answer("выберите вариант действий", reply_markup=keyboard, )
 
+
 # here we react to the text of buttons
 @dp.message(F.text.contains(","))
 async def var_1(message: types.Message):
@@ -51,6 +51,12 @@ async def var_1(message: types.Message):
 
     # calling func to send your his query digest
     await send_message_to_user(user_id=message.from_user.id)
+    q_words= get_query(message.from_user.id).split(',')
+    results = search(q_words[0])
+    id_list = results['IdList']
+    papers = fetch_details(id_list)
+    for i, paper in enumerate(papers['PubmedArticle']):
+        print("{}) {}".format(i+1, paper['MedlineCitation']['Article']['ArticleTitle']))
 
 @dp.message(F.text.contains("ввести ключевые слова для поиска"))
 async def var_1(message: types.Message):
@@ -75,16 +81,15 @@ async def send_message_to_user(user_id):
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    shedule_jobs() # call func of sheduling
-    scheduler.start() # start here
+    #shedule_jobs() # call func of sheduling
+    #scheduler.start() # start here
+    
     await dp.start_polling(bot)
 
 
-def add_query(user, query):
-    with Session(engine) as session:
-        query_record = PubMedSearch(user_id=user, query_words=query)
-        session.add(query_record)
-        session.commit()
+
+
+
 
 @dp.message()
 async def send_mes_test(dp: Dispatcher):
@@ -94,6 +99,21 @@ async def send_mes_test(dp: Dispatcher):
 def shedule_jobs():
     scheduler.add_job(send_mes_test, 'interval', seconds=5, args=(dp,))    
 
+#############################
+# db methods
+############################
+def add_query(user, query):
+    with Session(engine) as session:
+        query_record = PubMedSearch(user_id=user, query_words=query)
+        session.add(query_record)
+        session.commit()
+
+def get_query(user):
+    with Session(engine) as session:
+        search_query = session.query(PubMedSearch).filter_by(user_id=user).first()
+        print(type(search_query))
+        print(dir(search_query))
+        return search_query.query_words
 
 
 if __name__ == "__main__":

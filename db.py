@@ -12,6 +12,7 @@ class PubMedSearch(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
     query_words = Column(String)  
+    # add schedule time
  
     
     def __init__(self, user_id, query_words):
