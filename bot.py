@@ -2,7 +2,7 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
-from aiogram import F
+from aiogram import F, MagicFilter
 from dotenv import load_dotenv
 import os
 from db import engine, PubMedSearch, get_query, add_query
@@ -32,13 +32,21 @@ async def cmd_start(message: types.Message):
         reply_markup=builder.as_markup()
     )
 
-
 @dp.callback_query(F.data == "query_words")
-async def send_random_value(callback: types.CallbackQuery):
-    await callback.message.answer(str(randint(1, 10)))
+async def get_query_words_input(callback: types.CallbackQuery):
+    await callback.message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", )
+                        #reply_markup=types.ReplyKeyboardRemove())
 
 
+@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
+async def var_1(message: types.Message):
+    add_query(int(message.from_user.id), message.text)
+    await message.reply("записано")
+    await send_message_to_user(user_id=message.from_user.id)
 
+@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
+async def var_1(message: types.Message):
+    await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой")
 
 
 
@@ -49,22 +57,22 @@ async def var_1(message: types.Message):
     await message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", 
                         reply_markup=types.ReplyKeyboardRemove())
 
-
+"""
 @dp.message(F.text.contains(","))
 async def var_1(message: types.Message):
     add_query(int(message.from_user.id), message.text)
     await message.reply("записано")
     await send_message_to_user(user_id=message.from_user.id)
     
-    """ it'll be the query by shedule
+    # it'll be the query by shedule
     q_words= get_query(message.from_user.id).split(',')
     results = search(q_words[0])
     id_list = results['IdList']
     papers = fetch_details(id_list)
     for i, paper in enumerate(papers['PubmedArticle']):
         print("{}) {}".format(i+1, paper['MedlineCitation']['Article']['ArticleTitle']))
-    """
-
+    
+"""
 ####################################################
 # this will be function to send digest
 # placeholder to see it works
