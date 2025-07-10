@@ -90,6 +90,23 @@ async def choose_pubmed_check(message: types.Message):
     )
 
 
+@dp.callback_query(F.data == "mondays")
+async def add_check_mondays(callback: types.CallbackQuery):
+    await callback.message.answer("ok, проверяем по понедельникам", )
+    await callback.message.delete()
+
+
+@dp.callback_query(F.data == "fridays")
+async def add_check_fridays(callback: types.CallbackQuery):
+    await callback.message.answer("ok, проверяем по пятницам", )
+    await callback.message.delete()
+
+
+
+@dp.callback_query(F.data == "month_last_friday")
+async def add_check_fridays(callback: types.CallbackQuery):
+    await callback.message.answer("ok, проверяем раз в месяц", )
+    await callback.message.delete()
 
 """"
 @dp.callback_query(F.data == "email")
