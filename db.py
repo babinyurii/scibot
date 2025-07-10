@@ -13,6 +13,8 @@ class PubMedSearch(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
     query_words = Column(String)  
+    email = Column(String(256), unique=True, nullable=False)
+    schedule_interval = Column(String(256))
     # add schedule time
  
     

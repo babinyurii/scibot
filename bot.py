@@ -26,6 +26,34 @@ async def cmd_start(message: types.Message):
     await message.answer(text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
 
 
+@dp.message(Command("edit"))
+async def edit_query(message: types.Message):
+    with Session(engine) as session:
+        if session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
+            builder = InlineKeyboardBuilder()
+    
+            builder.add(types.InlineKeyboardButton(
+                text='ключевые слова для поискового запроса',
+                callback_data='edit_query_keywords'
+            ))
+            builder.add(types.InlineKeyboardButton(
+                text='email',
+                callback_data='edit_email'
+            ))
+
+            builder.add(types.InlineKeyboardButton(
+                text='частоту проверки базы',
+                callback_data='edit_pubmed_check_interval'
+            ))
+
+            await message.answer(
+                text='выберите, что вы хотите отредактировать:',
+                reply_markup=builder.as_markup()
+            )
+        else:
+            await message.answer("вы еще не создавали поисковый запрос. выберите команду /start из меню, чтоб его создать")
+
+
 @dp.message(F.text.contains("@"))
 async def validate_and_add_email(message: types.Message):
     print('EMAIL MESSAGE TEXT: ', message.text)
@@ -39,14 +67,14 @@ async def validate_and_add_email(message: types.Message):
 
 
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
-async def var_1(message: types.Message):
+async def add_keywords_to_db(message: types.Message):
     with Session(engine) as session:
         if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
             add_query(int(message.from_user.id), message.text)
             await message.reply("записано")
             await input_email(message)
         else:
-            await message.reply("запись уже существует")
+            await message.reply("запись уже существует. выберите команду /edit - отредактировать запись из меню")
 
 
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
