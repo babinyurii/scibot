@@ -9,6 +9,7 @@ from db import engine, PubMedSearch, get_query, add_query
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pubmed_search import search, fetch_details
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from sqlalchemy.orm import Session
 
 scheduler = AsyncIOScheduler()
 load_dotenv()
@@ -40,9 +41,14 @@ async def get_query_words_input(callback: types.CallbackQuery):
 
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
 async def var_1(message: types.Message):
-    add_query(int(message.from_user.id), message.text)
-    await message.reply("записано")
-    await send_message_to_user(user_id=message.from_user.id)
+    with Session(engine) as session:
+        if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
+            add_query(int(message.from_user.id), message.text)
+            await message.reply("записано")
+            await send_message_to_user(user_id=message.from_user.id)
+        else:
+            await message.reply("запись уже существует")
+
 
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
 async def var_1(message: types.Message):

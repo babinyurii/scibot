@@ -31,10 +31,9 @@ def add_query(user, query):
         query_record = PubMedSearch(user_id=user, query_words=query)
         session.add(query_record)
         session.commit()
+     
 
 def get_query(user):
     with Session(engine) as session:
         search_query = session.query(PubMedSearch).filter_by(user_id=user).first()
-        print(type(search_query))
-        print(dir(search_query))
         return search_query.query_words
