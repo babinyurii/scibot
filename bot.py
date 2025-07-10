@@ -2,12 +2,15 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
-from aiogram import F
+from aiogram import F, MagicFilter
 from dotenv import load_dotenv
 import os
 from db import engine, PubMedSearch, get_query, add_query
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pubmed_search import search, fetch_details
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from sqlalchemy.orm import Session
+from email_validator import validate_email, EmailNotValidError
 
 
 scheduler = AsyncIOScheduler()
@@ -20,50 +23,88 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    kb = [
-        [
-        types.KeyboardButton(text="ввести ключевые слова для поиска"),
-        # types.KeyboardButton(text="вариант 2"),
-        ],
-    ]
-    keyboard = types.ReplyKeyboardMarkup(keyboard=kb,  
-                                        resize_keyboard=True,
-                                        input_field_placeholder="нажмите на кнопку ниже")
-    await message.answer("выберите вариант действий", reply_markup=keyboard, )
+    await message.answer(text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
 
 
-@dp.message(F.text.contains("ввести ключевые слова для поиска"))
-async def var_1(message: types.Message):
-    await message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", 
-                        reply_markup=types.ReplyKeyboardRemove())
-
-
-@dp.message(F.text.contains(","))
-async def var_1(message: types.Message):
-    add_query(int(message.from_user.id), message.text)
-    await message.reply("записано")
-    await send_message_to_user(user_id=message.from_user.id)
-    
-    """ it'll be the query by shedule
-    q_words= get_query(message.from_user.id).split(',')
-    results = search(q_words[0])
-    id_list = results['IdList']
-    papers = fetch_details(id_list)
-    for i, paper in enumerate(papers['PubmedArticle']):
-        print("{}) {}".format(i+1, paper['MedlineCitation']['Article']['ArticleTitle']))
-    """
-
-####################################################
-# this will be function to send digest
-# placeholder to see it works
-async def send_message_to_user(user_id):
+@dp.message(F.text.contains("@"))
+async def validate_and_add_email(message: types.Message):
+    print('EMAIL MESSAGE TEXT: ', message.text)
     try:
-        await bot.send_message(chat_id=user_id, text='i send you message by your id')
-        print(f"Message sent to user {user_id}")
-    except Exception as e:
-        print(f"Error sending message to user {user_id}: {e}")
-#
-##########################################################################
+        email = validate_email(message.text)
+        await message.reply('good email')
+        await choose_pubmed_check(message)
+    except EmailNotValidError as e:
+        print(e)
+        await message.reply('BAD email')
+
+
+@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
+async def var_1(message: types.Message):
+    with Session(engine) as session:
+        if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
+            add_query(int(message.from_user.id), message.text)
+            await message.reply("записано")
+            await input_email(message)
+        else:
+            await message.reply("запись уже существует")
+
+
+@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
+async def invalid_query_handler(message: types.Message):
+    await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой")
+
+
+@dp.message()
+async def input_email(message: types.Message):
+    await message.answer(text='введите email')
+
+
+@dp.message()
+async def choose_pubmed_check(message: types.Message):
+    builder = InlineKeyboardBuilder()
+    
+    builder.add(types.InlineKeyboardButton(
+        text='по понедельникам',
+        callback_data='mondays'
+    ))
+    builder.add(types.InlineKeyboardButton(
+        text='по пятницам',
+        callback_data='fridays'
+    ))
+
+    builder.add(types.InlineKeyboardButton(
+        text='в последнюю пятницу месяца',
+        callback_data='month_last_friday'
+    ))
+
+    await message.answer(
+        text='выберите день проверки PubMed',
+        reply_markup=builder.as_markup()
+    )
+
+
+@dp.callback_query(F.data == "mondays")
+async def add_check_mondays(callback: types.CallbackQuery):
+    await callback.message.answer("ok, проверяем по понедельникам", )
+    await callback.message.delete()
+    # func to add to db
+
+
+@dp.callback_query(F.data == "fridays")
+async def add_check_fridays(callback: types.CallbackQuery):
+    await callback.message.answer("ok, проверяем по пятницам", )
+    await callback.message.delete()
+    # func to add to db
+
+
+
+@dp.callback_query(F.data == "month_last_friday")
+async def add_check_fridays(callback: types.CallbackQuery):
+    await callback.message.answer("ok, проверяем раз в месяц", )
+    await callback.message.delete()
+    # func to add to db
+
+
 
 @dp.message()
 async def send_mes_test(dp: Dispatcher):
@@ -77,8 +118,8 @@ def shedule_jobs():
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
-    shedule_jobs() # call func of sheduling
-    scheduler.start() # start here
+    #shedule_jobs() # call func of sheduling
+    #scheduler.start() # start here
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
