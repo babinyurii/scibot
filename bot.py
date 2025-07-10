@@ -5,7 +5,7 @@ from aiogram.filters.command import Command
 from aiogram import F, MagicFilter
 from dotenv import load_dotenv
 import os
-from db import engine, PubMedSearch, get_query, add_query
+from db import engine, PubMedSearch, get_query, add_query, edit_email, edit_schedule_interval
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pubmed_search import search, fetch_details
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -27,7 +27,7 @@ async def cmd_start(message: types.Message):
 
 
 @dp.message(Command("edit"))
-async def edit_query(message: types.Message):
+async def show_edit_query_buttons_menu(message: types.Message):
     with Session(engine) as session:
         if session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
             builder = InlineKeyboardBuilder()
@@ -54,11 +54,16 @@ async def edit_query(message: types.Message):
             await message.answer("вы еще не создавали поисковый запрос. выберите команду /start из меню, чтоб его создать")
 
 
+
+
+
 @dp.message(F.text.contains("@"))
 async def validate_and_add_email(message: types.Message):
     print('EMAIL MESSAGE TEXT: ', message.text)
     try:
         email = validate_email(message.text)
+        edit_email(email=message.text, user=message.from_user.id)
+
         await message.reply('good email')
         await choose_pubmed_check(message)
     except EmailNotValidError as e:
@@ -113,6 +118,8 @@ async def choose_pubmed_check(message: types.Message):
 
 @dp.callback_query(F.data == "mondays")
 async def add_check_mondays(callback: types.CallbackQuery):
+    edit_schedule_interval(user=callback.from_user.id, 
+                            schedule_interval='mondays') # <<<<<<<<<<<<<<<<<<<
     await callback.message.answer("ok, проверяем по понедельникам", )
     await callback.message.delete()
     # func to add to db
@@ -120,6 +127,8 @@ async def add_check_mondays(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == "fridays")
 async def add_check_fridays(callback: types.CallbackQuery):
+    edit_schedule_interval(user=callback.from_user.id,
+                            schedule_interval='fridays') # <<<<<<<<<<<<<<<<<<<
     await callback.message.answer("ok, проверяем по пятницам", )
     await callback.message.delete()
     # func to add to db
@@ -128,6 +137,8 @@ async def add_check_fridays(callback: types.CallbackQuery):
 
 @dp.callback_query(F.data == "month_last_friday")
 async def add_check_fridays(callback: types.CallbackQuery):
+    edit_schedule_interval(user=callback.from_user.id,
+                            schedule_interval='month_last_friday') # <<<<<<<<<<<<<<<<<<<
     await callback.message.answer("ok, проверяем раз в месяц", )
     await callback.message.delete()
     # func to add to db

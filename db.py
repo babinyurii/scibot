@@ -13,7 +13,7 @@ class PubMedSearch(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer)
     query_words = Column(String)  
-    email = Column(String(256), unique=True, nullable=False)
+    email = Column(String(256), unique=True)
     schedule_interval = Column(String(256))
     # add schedule time
  
@@ -39,3 +39,18 @@ def get_query(user):
     with Session(engine) as session:
         search_query = session.query(PubMedSearch).filter_by(user_id=user).first()
         return search_query.query_words
+
+
+def edit_email(email, user):
+    with Session(engine) as session:
+        user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
+        user_record.email = email
+        session.commit()
+
+def edit_schedule_interval(schedule_interval, user):
+    with Session(engine) as session:
+        user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
+        user_record.schedule_interval = schedule_interval
+        session.commit()
+
+
