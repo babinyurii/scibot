@@ -23,9 +23,7 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    await bot.send_message(chat_id=message.from_user.id, 
-                            text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
-  #await message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой",) 
+    await message.answer(text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
 
 
 @dp.message(F.text.contains("@"))
@@ -40,15 +38,13 @@ async def validate_and_add_email(message: types.Message):
         await message.reply('BAD email')
 
 
-#@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
 async def var_1(message: types.Message):
     with Session(engine) as session:
         if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
             add_query(int(message.from_user.id), message.text)
             await message.reply("записано")
-            #await send_message_to_user(user_id=message.from_user.id)
-            await input_email(user_id=message.from_user.id)
+            await input_email(message)
         else:
             await message.reply("запись уже существует")
 
@@ -58,12 +54,9 @@ async def invalid_query_handler(message: types.Message):
     await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой")
 
 
-
 @dp.message()
-async def input_email(user_id):
-    await bot.send_message(chat_id=user_id, text='введите email')
-
-
+async def input_email(message: types.Message):
+    await message.answer(text='введите email')
 
 
 @dp.message()
@@ -94,12 +87,14 @@ async def choose_pubmed_check(message: types.Message):
 async def add_check_mondays(callback: types.CallbackQuery):
     await callback.message.answer("ok, проверяем по понедельникам", )
     await callback.message.delete()
+    # func to add to db
 
 
 @dp.callback_query(F.data == "fridays")
 async def add_check_fridays(callback: types.CallbackQuery):
     await callback.message.answer("ok, проверяем по пятницам", )
     await callback.message.delete()
+    # func to add to db
 
 
 
@@ -107,63 +102,9 @@ async def add_check_fridays(callback: types.CallbackQuery):
 async def add_check_fridays(callback: types.CallbackQuery):
     await callback.message.answer("ok, проверяем раз в месяц", )
     await callback.message.delete()
-
-""""
-@dp.callback_query(F.data == "email")
-async def validate_and_add_email(message: types.Message):
-    try:
-        email = message.text
-        await message.reply("good email")
-    except EmailNotValidError as e:
-        print('email not valid: ', e)
-        await message.reply("bad email")
-
-    
-    
-    with Session(engine) as session:
-        if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
-            add_query(int(message.from_user.id), message.text)
-            await message.reply("записано")
-            await send_message_to_user(user_id=message.from_user.id)
-            await email_input(message)
-        else:
-            await message.reply("запись уже существует")
-    """
+    # func to add to db
 
 
-#################################3
-#@dp.message(F.text.contains("ввести ключевые слова для поиска"))
-#async def var_1(message: types.Message):
-#    await message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", 
-#                        reply_markup=types.ReplyKeyboardRemove())
-
-"""
-@dp.message(F.text.contains(","))
-async def var_1(message: types.Message):
-    add_query(int(message.from_user.id), message.text)
-    await message.reply("записано")
-    await send_message_to_user(user_id=message.from_user.id)
-    
-    # it'll be the query by shedule
-    q_words= get_query(message.from_user.id).split(',')
-    results = search(q_words[0])
-    id_list = results['IdList']
-    papers = fetch_details(id_list)
-    for i, paper in enumerate(papers['PubmedArticle']):
-        print("{}) {}".format(i+1, paper['MedlineCitation']['Article']['ArticleTitle']))
-    
-"""
-####################################################
-# this will be function to send digest
-# placeholder to see it works
-async def send_message_to_user(user_id):
-    try:
-        await bot.send_message(chat_id=user_id, text='i send you message by your id')
-        print(f"Message sent to user {user_id}")
-    except Exception as e:
-        print(f"Error sending message to user {user_id}: {e}")
-#
-##########################################################################
 
 @dp.message()
 async def send_mes_test(dp: Dispatcher):
