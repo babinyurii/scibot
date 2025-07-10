@@ -10,6 +10,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pubmed_search import search, fetch_details
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm import Session
+from email_validator import validate_email, EmailNotValidError
+
 
 scheduler = AsyncIOScheduler()
 load_dotenv()
@@ -38,30 +40,88 @@ async def get_query_words_input(callback: types.CallbackQuery):
     await callback.message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", )
                         #reply_markup=types.ReplyKeyboardRemove())
 
-
+#@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
 async def var_1(message: types.Message):
+    print('FROM , handling: ', message.text)
     with Session(engine) as session:
         if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
             add_query(int(message.from_user.id), message.text)
             await message.reply("записано")
             await send_message_to_user(user_id=message.from_user.id)
+            await email_input_button(message)
         else:
             await message.reply("запись уже существует")
 
 
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
-async def var_1(message: types.Message):
+async def invalid_query_handler(message: types.Message):
     await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой")
 
 
 
+@dp.message()
+async def email_input_button(message: types.Message):
+
+    builder = InlineKeyboardBuilder()
+    builder.add(types.InlineKeyboardButton(
+        text='введите email',
+        callback_data='email'
+    ))
+    await message.answer(
+        'нажмите на кнопку, чтоб ввести email',
+        reply_markup=builder.as_markup()
+    )
+
+
+@dp.callback_query(F.data == "email")
+async def email_input(callback: types.CallbackQuery):
+    await callback.message.reply("введите e-mail", )
+                        #reply_markup=types.ReplyKeyboardRemove())
+
+
+
+@dp.message(F.text.contains("@"))
+async def validate_and_add_email(message: types.Message):
+    print('EMAIL MESSAGE TEXT: ', message.text)
+    try:
+        email = validate_email(message.text)
+        await message.reply('good email')
+    except EmailNotValidError as e:
+        print(e)
+        await message.reply('BAD email')
+
+
+
+
+""""
+@dp.callback_query(F.data == "email")
+async def validate_and_add_email(message: types.Message):
+    try:
+        email = message.text
+        await message.reply("good email")
+    except EmailNotValidError as e:
+        print('email not valid: ', e)
+        await message.reply("bad email")
+
+    
+    
+    with Session(engine) as session:
+        if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
+            add_query(int(message.from_user.id), message.text)
+            await message.reply("записано")
+            await send_message_to_user(user_id=message.from_user.id)
+            await email_input(message)
+        else:
+            await message.reply("запись уже существует")
+    """
+
 
 #################################3
-@dp.message(F.text.contains("ввести ключевые слова для поиска"))
-async def var_1(message: types.Message):
-    await message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", 
-                        reply_markup=types.ReplyKeyboardRemove())
+#@dp.message(F.text.contains("ввести ключевые слова для поиска"))
+#async def var_1(message: types.Message):
+#    await message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", 
+#                        reply_markup=types.ReplyKeyboardRemove())
 
 """
 @dp.message(F.text.contains(","))
