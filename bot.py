@@ -34,6 +34,7 @@ async def validate_and_add_email(message: types.Message):
     try:
         email = validate_email(message.text)
         await message.reply('good email')
+        await choose_pubmed_check(message)
     except EmailNotValidError as e:
         print(e)
         await message.reply('BAD email')
@@ -65,6 +66,28 @@ async def input_email(user_id):
 
 
 
+@dp.message()
+async def choose_pubmed_check(message: types.Message):
+    builder = InlineKeyboardBuilder()
+    
+    builder.add(types.InlineKeyboardButton(
+        text='по понедельникам',
+        callback_data='mondays'
+    ))
+    builder.add(types.InlineKeyboardButton(
+        text='по пятницам',
+        callback_data='fridays'
+    ))
+
+    builder.add(types.InlineKeyboardButton(
+        text='в последнюю пятницу месяца',
+        callback_data='month_last_friday'
+    ))
+
+    await message.answer(
+        text='выберите день проверки PubMed',
+        reply_markup=builder.as_markup()
+    )
 
 
 
