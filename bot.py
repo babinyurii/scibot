@@ -23,62 +23,9 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-
-    builder = InlineKeyboardBuilder()
-    builder.add(types.InlineKeyboardButton(
-        text='ввести поисковые слова',
-        callback_data='query_words'
-    ))
-
-    await message.answer(
-        'нажмите на кнопку, чтоб ввести поисковые слова',
-        reply_markup=builder.as_markup()
-    )
-
-@dp.callback_query(F.data == "query_words")
-async def get_query_words_input(callback: types.CallbackQuery):
-    await callback.message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой", )
-                        #reply_markup=types.ReplyKeyboardRemove())
-
-#@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
-@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
-async def var_1(message: types.Message):
-    print('FROM , handling: ', message.text)
-    with Session(engine) as session:
-        if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
-            add_query(int(message.from_user.id), message.text)
-            await message.reply("записано")
-            await send_message_to_user(user_id=message.from_user.id)
-            await email_input_button(message)
-        else:
-            await message.reply("запись уже существует")
-
-
-@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
-async def invalid_query_handler(message: types.Message):
-    await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой")
-
-
-
-@dp.message()
-async def email_input_button(message: types.Message):
-
-    builder = InlineKeyboardBuilder()
-    builder.add(types.InlineKeyboardButton(
-        text='введите email',
-        callback_data='email'
-    ))
-    await message.answer(
-        'нажмите на кнопку, чтоб ввести email',
-        reply_markup=builder.as_markup()
-    )
-
-
-@dp.callback_query(F.data == "email")
-async def email_input(callback: types.CallbackQuery):
-    await callback.message.reply("введите e-mail", )
-                        #reply_markup=types.ReplyKeyboardRemove())
-
+    await bot.send_message(chat_id=message.from_user.id, 
+                            text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
+  #await message.reply("введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой",) 
 
 
 @dp.message(F.text.contains("@"))
@@ -90,6 +37,33 @@ async def validate_and_add_email(message: types.Message):
     except EmailNotValidError as e:
         print(e)
         await message.reply('BAD email')
+
+
+#@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
+@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
+async def var_1(message: types.Message):
+    with Session(engine) as session:
+        if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
+            add_query(int(message.from_user.id), message.text)
+            await message.reply("записано")
+            #await send_message_to_user(user_id=message.from_user.id)
+            await input_email(user_id=message.from_user.id)
+        else:
+            await message.reply("запись уже существует")
+
+
+@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
+async def invalid_query_handler(message: types.Message):
+    await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой")
+
+
+
+@dp.message()
+async def input_email(user_id):
+    await bot.send_message(chat_id=user_id, text='введите email')
+
+
+
 
 
 
