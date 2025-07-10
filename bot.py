@@ -72,7 +72,7 @@ async def validate_and_add_email(message: types.Message):
 
 
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
-async def add_keywords_to_db(message: types.Message):
+async def create_record(message: types.Message):
     with Session(engine) as session:
         if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
             add_query(int(message.from_user.id), message.text)
@@ -144,7 +144,8 @@ async def add_check_fridays(callback: types.CallbackQuery):
     # func to add to db
 
 
-
+#############################3
+# draft to schedule funcs
 @dp.message()
 async def send_mes_test(dp: Dispatcher):
     q_words = get_query() # new
@@ -153,7 +154,8 @@ async def send_mes_test(dp: Dispatcher):
 
 def shedule_jobs():
     scheduler.add_job(send_mes_test, 'interval', seconds=10, args=(dp,))    
-
+# draft to schedule funcs
+#####################################
 
 # Запуск процесса поллинга новых апдейтов
 async def main():
