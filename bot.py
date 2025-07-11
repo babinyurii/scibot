@@ -173,15 +173,32 @@ async def send_mes_test(dp: Dispatcher):
     await bot.send_message(chat_id=5497349882, text='message by shedule') # old
     await bot.send_message(chat_id=5497349882, text=q_words)
 
-def shedule_jobs():
-    scheduler.add_job(send_mes_test, 'interval', seconds=10, args=(dp,))    
-# draft to schedule funcs
-#####################################
 
-# Запуск процесса поллинга новых апдейтов
+@dp.message()
+def check_pubmed_on_monday(dp: Dispatcher):
+    pass
+
+@dp.message()
+def check_pubmed_on_friday():
+    pass
+
+@dp.message()
+def check_pubmed_on_last_friday_in_month():
+    pass
+
+
+
+def shedule_jobs():
+    # scheduler.add_job(send_mes_test, 'interval', seconds=10, args=(dp,))
+    scheduler.add_job(check_pubmed_on_monday, args=(dp, ))    
+    pass
+
+
+
+
 async def main():
-    #shedule_jobs() # call func of sheduling
-    #scheduler.start() # start here
+    shedule_jobs() # call func of sheduling
+    scheduler.start() # start here
     await dp.start_polling(bot)
 
 if __name__ == "__main__":
