@@ -62,15 +62,18 @@ async def show_edit_query_buttons_menu(message: types.Message):
 @dp.callback_query(F.data == "edit_query_keywords")
 async def input_query_keywords_for_editing(callback: types.CallbackQuery):
     await callback.message.answer(text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
+    await callback.message.delete()
 
 @dp.callback_query(F.data == "edit_email")
 async def input_query_keywords_for_editing(callback: types.CallbackQuery):
     await input_email(callback.message)
+    await callback.message.delete()
 
 
 @dp.callback_query(F.data == "edit_pubmed_check_interval")
 async def input_query_keywords_for_editing(callback: types.CallbackQuery):
     await choose_pubmed_check(callback.message)
+    await callback.message.delete()
 
 
 @dp.message(F.text.contains("@"))
@@ -93,7 +96,7 @@ async def validate_and_add_email(message: types.Message):
         await message.reply('BAD email')
 
 
-@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) <= 3)
+@dp.message((F.text.contains(",")) & (MagicFilter.len(F.text.split(',')) <= 3))
 async def create_record(message: types.Message):
     with Session(engine) as session:
         if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
@@ -105,7 +108,12 @@ async def create_record(message: types.Message):
             await message.reply(text='отредактировано')
 
 
-@dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
+@dp.message((~F.text.contains(",")) & (~F.text.contains(",")))
+async def invalid_query_handler(message: types.Message):
+    await message.reply("неверный ввод")
+
+
+@dp.message((F.text.contains(",")) and (MagicFilter.len(F.text.split(',')) > 3))
 async def invalid_query_handler(message: types.Message):
     await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой")
 
