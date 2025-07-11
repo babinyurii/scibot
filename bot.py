@@ -5,7 +5,7 @@ from aiogram.filters.command import Command
 from aiogram import F, MagicFilter
 from dotenv import load_dotenv
 import os
-from db import engine, PubMedSearch, get_query, add_query, edit_email, edit_schedule_interval
+from db import engine, PubMedSearch, get_query, add_query, edit_email, edit_schedule_interval, edit_query_keywords
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from pubmed_search import search, fetch_details
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -23,7 +23,11 @@ dp = Dispatcher()
 
 @dp.message(Command("start"))
 async def cmd_start(message: types.Message):
-    await message.answer(text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
+    with Session(engine) as session:
+        if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
+            await message.answer(text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
+        else:
+            await message.answer("у вас есть запрос выберит /edit из меню, если хотите его отредактировать")
 
 
 @dp.message(Command("edit"))
@@ -55,6 +59,15 @@ async def show_edit_query_buttons_menu(message: types.Message):
 
 
 
+@dp.callback_query(F.data == "edit_query_keywords")
+async def input_query_keywords_for_editing(callback: types.CallbackQuery):
+    await callback.message.answer(text='введите ключевые слова для поиска в PubMed. Не более 3 слов, разделенных запятой')
+
+@dp.callback_query(F.data == "edit_email")
+async def input_query_keywords_for_editing(callback: types.CallbackQuery):
+    await input_email(callback.message)
+
+
 
 
 @dp.message(F.text.contains("@"))
@@ -75,11 +88,12 @@ async def validate_and_add_email(message: types.Message):
 async def create_record(message: types.Message):
     with Session(engine) as session:
         if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
-            add_query(int(message.from_user.id), message.text)
+            add_query(message.from_user.id, message.text)
             await message.reply("записано")
             await input_email(message)
         else:
-            await message.reply("запись уже существует. выберите команду /edit - отредактировать запись из меню")
+            edit_query_keywords(user=message.from_user.id, query_words=message.text)
+            await message.reply(text='отредактировано')
 
 
 @dp.message(F.text.contains(",") and MagicFilter.len(F.text.split(',')) > 3)
@@ -122,7 +136,7 @@ async def add_check_mondays(callback: types.CallbackQuery):
                             schedule_interval='mondays') # <<<<<<<<<<<<<<<<<<<
     await callback.message.answer("ok, проверяем по понедельникам", )
     await callback.message.delete()
-    # func to add to db
+
 
 
 @dp.callback_query(F.data == "fridays")
@@ -131,7 +145,6 @@ async def add_check_fridays(callback: types.CallbackQuery):
                             schedule_interval='fridays') # <<<<<<<<<<<<<<<<<<<
     await callback.message.answer("ok, проверяем по пятницам", )
     await callback.message.delete()
-    # func to add to db
 
 
 
@@ -141,7 +154,6 @@ async def add_check_fridays(callback: types.CallbackQuery):
                             schedule_interval='month_last_friday') # <<<<<<<<<<<<<<<<<<<
     await callback.message.answer("ok, проверяем раз в месяц", )
     await callback.message.delete()
-    # func to add to db
 
 
 #############################3
