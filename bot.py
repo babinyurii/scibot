@@ -93,7 +93,7 @@ async def validate_and_add_email(message: types.Message):
                 await choose_pubmed_check(message)
     except EmailNotValidError as e:
         print(e)
-        await message.reply('BAD email')
+        await message.reply('BAD email. попробуйте ввести еще раз')
 
 
 @dp.message((F.text.contains(",")) & (MagicFilter.len(F.text.split(',')) <= 3))
@@ -101,21 +101,21 @@ async def create_record(message: types.Message):
     with Session(engine) as session:
         if not session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first():
             add_query(message.from_user.id, message.text)
-            await message.reply("записано")
+            await message.reply("записано ключевые слова")
             await input_email(message)
         else:
             edit_query_keywords(user=message.from_user.id, query_words=message.text)
-            await message.reply(text='отредактировано')
+            await message.reply(text='отредактировано ключевые слова')
 
 
-@dp.message((~F.text.contains(",")) & (~F.text.contains(",")))
+@dp.message((~F.text.contains(",")) & (~F.text.contains("@")))
 async def invalid_query_handler(message: types.Message):
-    await message.reply("неверный ввод")
+    await message.reply("неверный ввод. попробуйте еще раз. перехват любой ошибки")
 
 
-@dp.message((F.text.contains(",")) and (MagicFilter.len(F.text.split(',')) > 3))
+@dp.message((F.text.contains(",")) & (MagicFilter.len(F.text.split(',')) > 3))
 async def invalid_query_handler(message: types.Message):
-    await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой")
+    await message.reply("неверный ввод. попробуйте снова. Не более 3 слов, разделенных запятой. перехват ключевых слов")
 
 
 @dp.message()
