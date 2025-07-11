@@ -68,6 +68,9 @@ async def input_query_keywords_for_editing(callback: types.CallbackQuery):
     await input_email(callback.message)
 
 
+@dp.callback_query(F.data == "edit_pubmed_check_interval")
+async def input_query_keywords_for_editing(callback: types.CallbackQuery):
+    await choose_pubmed_check(callback.message)
 
 
 @dp.message(F.text.contains("@"))
@@ -75,10 +78,16 @@ async def validate_and_add_email(message: types.Message):
     print('EMAIL MESSAGE TEXT: ', message.text)
     try:
         email = validate_email(message.text)
-        edit_email(email=message.text, user=message.from_user.id)
-
-        await message.reply('good email')
-        await choose_pubmed_check(message)
+        with Session(engine) as session:
+            record = session.query(PubMedSearch).filter_by(user_id=message.from_user.id).first()
+            if not record.email:
+                edit_email(email=message.text, user=message.from_user.id)
+                await message.reply('good email, записано')
+            else:
+                edit_email(email=message.text, user=message.from_user.id)
+                await message.reply('good email, отредактировано')
+            if not record.schedule_interval:
+                await choose_pubmed_check(message)
     except EmailNotValidError as e:
         print(e)
         await message.reply('BAD email')
