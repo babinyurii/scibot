@@ -98,7 +98,8 @@ async def finish_creating_query(callback: types.CallbackQuery, state: FSMContext
                                    {user_query['keywords']} \
                                        {user_query['interval']}")
     await callback.message.delete()
-
+    add_query(user=callback.from_user.id,
+              user_query=user_query)
     await state.clear()
     # clear state
     # write into db
