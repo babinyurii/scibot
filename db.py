@@ -18,9 +18,11 @@ class PubMedSearch(Base):
     # add schedule time
  
     
-    def __init__(self, user_id, query_words):
+    def __init__(self, user_id, email, query_words, schedule_interval):
         self.user_id = user_id
-        self.query_words = query_words    
+        self.query_words = query_words   
+        self.email = email
+        self.schedule_interval = schedule_interval
 
 Base.metadata.create_all(engine)
 
@@ -28,9 +30,13 @@ Base.metadata.create_all(engine)
 #############################
 # db methods
 ############################
-def add_query(user, query):
+def add_query(user, user_query):
     with Session(engine) as session:
-        query_record = PubMedSearch(user_id=user, query_words=query)
+        query_record = PubMedSearch(user_id=user, 
+                                    query_words=user_query['keywords'],
+                                    email=user_query['email'],
+                                    schedule_interval=user_query['interval'])
+                                   
         session.add(query_record)
         session.commit()
      
