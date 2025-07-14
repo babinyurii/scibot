@@ -9,7 +9,7 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from fsm_states import CreateQuery
 from filters import EmailFilter, QueryKeywordsFilter
-
+from keybords import create_interval_choose_keyboard
 
 router = Router()
 
@@ -55,21 +55,10 @@ async def invalid_email_entered(message: Message):
 async def choose_query_interval(message: Message, state: FSMContext):
     await state.update_data(keywords=message.text.lower())
    
-    builder = InlineKeyboardBuilder()
-
-    builder.add(types.InlineKeyboardButton(
-        text='no mondays',
-        callback_data='mondays'
-    ))
-    builder.add(types.InlineKeyboardButton(
-        text='on fridays',
-        callback_data='fridays'
-    ))
-
-    builder.add(types.InlineKeyboardButton(
-        text='last friday of the month',
-        callback_data='last_friday'
-    ))
+    ######################333
+    # call func to create keyboard
+    ###############3333
+    builder = create_interval_choose_keyboard()
 
     await message.answer(
         text='keywords valid. now choose interval',
