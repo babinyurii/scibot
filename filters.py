@@ -18,6 +18,9 @@ class EmailFilter(BaseFilter):
 class QueryKeywordsFilter(BaseFilter):
     
     async def __call__(self, message: Message):
+        # add if ',' not in text:
+        # if text in this case is one word only still write it into db
+        # if user puts only single word or expression
         if ',' not in  message.text:
             return False
         keywords = message.text.split(',')
