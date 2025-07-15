@@ -30,6 +30,12 @@ Base.metadata.create_all(engine)
 #############################
 # db methods
 ############################
+
+def check_record_exists(user):
+    with Session(engine) as session:
+        return session.query(PubMedSearch).filter_by(user_id=user).first()
+
+
 def add_query(user, user_query):
     with Session(engine) as session:
         query_record = PubMedSearch(user_id=user, 

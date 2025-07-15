@@ -1,7 +1,7 @@
 from aiogram import Bot, Dispatcher, types, Router
 from aiogram.filters import Command, StateFilter
 from aiogram import F
-from db import engine, PubMedSearch, get_query, add_query, edit_email, edit_schedule_interval, edit_query_keywords
+from db import engine, PubMedSearch, get_query, add_query, edit_email, edit_schedule_interval, edit_query_keywords, check_record_exists
 from pubmed_search import search, fetch_details
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm import Session
@@ -16,10 +16,17 @@ router = Router()
 @router.message(Command(commands=['start']))
 async def start(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer(
-        text="choose create query (/create_query) "
-        "to start work"
-    )
+    
+    if check_record_exists(user=message.from_user.id):
+        await message.answer(
+            text="edit query (/edit_query) to edit your existing search config"
+        )
+    else:
+        await message.answer(
+            text="choose create query (/create_query) "
+            "to start work or edit query (/edit_query) to edit your existing search config"
+        )
+
 
 @router.message(StateFilter(None), Command('create_query'))
 async def enter_email(message: Message, state: FSMContext):
