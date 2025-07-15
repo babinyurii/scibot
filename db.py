@@ -59,13 +59,13 @@ def update_email(user, email):
         user_record.email = email
         session.commit()
 
-def edit_schedule_interval(schedule_interval, user):
+def update_schedule_interval(schedule_interval, user):
     with Session(engine) as session:
         user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
         user_record.schedule_interval = schedule_interval
         session.commit()
 
-def update_query_keywords(user, query_words):
+def update_keywords(user, query_words):
     with Session(engine) as session:
         user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
         user_record.query_words = query_words
