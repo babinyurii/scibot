@@ -8,3 +8,4 @@ class CreateQuery(StatesGroup):
 
 class EditQuery(StatesGroup):
     editing_email = State()
+    editing_query_words = State()

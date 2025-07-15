@@ -1,7 +1,7 @@
 from aiogram import Bot, Dispatcher, types, Router
 from aiogram.filters import Command, StateFilter
 from aiogram import F
-from db import engine, PubMedSearch, get_query, create_query, update_email, edit_schedule_interval, edit_query_keywords, check_record_exists
+from db import engine, PubMedSearch, get_query, create_query, update_email, edit_schedule_interval, update_query_keywords, check_record_exists
 from pubmed_search import search, fetch_details
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm import Session
@@ -48,6 +48,8 @@ async def enter_email(message: Message, state: FSMContext):
 
 ###################333
 # edit funcs
+
+# EDIT EMAIL
 @router.callback_query(StateFilter(None),
                 F.data=='edit_email')
 async def edit_email(callback: types.CallbackQuery, state: FSMContext):
@@ -67,6 +69,29 @@ async def finish_edit_email(message: Message, state: FSMContext):
     )
     await state.clear()
 
+
+# EDIT QUERY WORDS
+@router.callback_query(StateFilter(None),
+                F.data=='edit_query_keywords')
+async def edit_query_words(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
+    await callback.message.answer('enter query words')
+    await state.set_state(EditQuery.editing_query_words)
+
+
+@router.message(EditQuery.editing_query_words,
+                QueryKeywordsFilter())
+async def finish_edit_email(message: Message, state: FSMContext):
+    
+    await state.update_data(keywords=message.text)
+    update_query_keywords(user=message.from_user.id, query_words=message.text)
+    await message.answer(
+        text='keywords valid. edited'
+    )
+    await state.clear()
+
+#    
+###################################33
 
 @router.message(StateFilter(None), Command('create_query'))
 async def enter_email(message: Message, state: FSMContext):
