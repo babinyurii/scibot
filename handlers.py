@@ -32,11 +32,14 @@ async def start(message: Message, state: FSMContext):
         await message.answer(
             text="edit query (/edit_query) to edit your existing search config"
         )
+        await state.update_data(editing_data=True)
+
     else:
         await message.answer(
             text="choose create query (/create_query) "
-            "to start work or edit query (/edit_query) to edit your existing search config"
         )
+        await state.update_data(editing_data=False)
+
 
 @router.message(StateFilter(None), Command('edit_query'))
 async def enter_email(message: Message, state: FSMContext):
@@ -46,52 +49,13 @@ async def enter_email(message: Message, state: FSMContext):
         reply_markup=builder.as_markup()
     )
 
-###################333
-# edit funcs
 
-# EDIT EMAIL
 @router.callback_query(StateFilter(None),
                 F.data=='edit_email')
 async def edit_email(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
     await callback.message.answer('enter email')
-    await state.set_state(EditQuery.editing_email)
-
-
-@router.message(EditQuery.editing_email,
-                EmailFilter())
-async def finish_edit_email(message: Message, state: FSMContext):
-    
-    await state.update_data(email=message.text)
-    update_email(user=message.from_user.id, email=message.text)
-    await message.answer(
-        text='email valid. edited'
-    )
-    await state.clear()
-
-
-# EDIT QUERY WORDS
-@router.callback_query(StateFilter(None),
-                F.data=='edit_query_keywords')
-async def edit_query_words(callback: types.CallbackQuery, state: FSMContext):
-    await callback.message.delete()
-    await callback.message.answer('enter query words')
-    await state.set_state(EditQuery.editing_query_words)
-
-
-@router.message(EditQuery.editing_query_words,
-                QueryKeywordsFilter())
-async def finish_edit_email(message: Message, state: FSMContext):
-    
-    await state.update_data(keywords=message.text)
-    update_query_keywords(user=message.from_user.id, query_words=message.text)
-    await message.answer(
-        text='keywords valid. edited'
-    )
-    await state.clear()
-
-#    
-###################################33
+    await state.set_state(CreateQuery.entering_email)
 
 @router.message(StateFilter(None), Command('create_query'))
 async def enter_email(message: Message, state: FSMContext):
@@ -105,10 +69,20 @@ async def enter_email(message: Message, state: FSMContext):
                 EmailFilter())
 async def enter_query_keywords(message: Message, state: FSMContext):
     await state.update_data(email=message.text)
-    await message.answer(
-        text='email valid. now enter query keywords'
-    )
-    await state.set_state(CreateQuery.entering_query_keywords)
+    user_data = await state.get_data()
+
+    if user_data['editing_data']:
+        update_email(user=message.from_user.id, email=user_data['email'])
+        await message.answer(
+            text='editing email'
+        )
+        await state.clear()
+
+    else:
+        await message.answer(
+            text='email valid. now enter query keywords'
+        )
+        await state.set_state(CreateQuery.entering_query_keywords)
     
 
 
