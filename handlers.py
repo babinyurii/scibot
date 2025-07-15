@@ -17,9 +17,9 @@ interval_options = [('on mondays', 'mondays',),
                      ('last friday of the month',
                      'last_friday'),]
 
-edit_query_options = [('email', 'email',),
-                     ('keywords', 'query_keywords'), 
-                     ('schedule', 'schedule_interval'),]
+edit_query_options = [('email', 'edit_email',),
+                     ('keywords', 'edit_query_keywords'), 
+                     ('schedule', 'edit_schedule_interval'),]
 
 
 router = Router()
