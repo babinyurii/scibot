@@ -30,7 +30,13 @@ Base.metadata.create_all(engine)
 #############################
 # db methods
 ############################
-def add_query(user, user_query):
+
+def check_record_exists(user):
+    with Session(engine) as session:
+        return session.query(PubMedSearch).filter_by(user_id=user).first()
+
+
+def create_query(user, user_query):
     with Session(engine) as session:
         query_record = PubMedSearch(user_id=user, 
                                     query_words=user_query['keywords'],
@@ -47,19 +53,19 @@ def get_query(user):
         return search_query.query_words
 
 
-def edit_email(email, user):
+def update_email(user, email):
     with Session(engine) as session:
         user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
         user_record.email = email
         session.commit()
 
-def edit_schedule_interval(schedule_interval, user):
+def update_schedule_interval(schedule_interval, user):
     with Session(engine) as session:
         user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
         user_record.schedule_interval = schedule_interval
         session.commit()
 
-def edit_query_keywords(user, query_words):
+def update_keywords(user, query_words):
     with Session(engine) as session:
         user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
         user_record.query_words = query_words
