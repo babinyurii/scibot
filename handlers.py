@@ -9,7 +9,18 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from fsm_states import CreateQuery
 from filters import EmailFilter, QueryKeywordsFilter
-from keybords import create_interval_choose_keyboard
+from keybords import create_inline_keyboard
+
+
+interval_options = [('on mondays', 'mondays',),
+                     ('on fridays', 'fridays'), 
+                     ('last friday of the month',
+                     'last_friday'),]
+
+edit_query_options = [('email', 'email',),
+                     ('keywords', 'query_keywords'), 
+                     ('schedule', 'schedule_interval'),]
+
 
 router = Router()
 
@@ -27,6 +38,13 @@ async def start(message: Message, state: FSMContext):
             "to start work or edit query (/edit_query) to edit your existing search config"
         )
 
+@router.message(StateFilter(None), Command('edit_query'))
+async def enter_email(message: Message, state: FSMContext):
+    builder = create_inline_keyboard(edit_query_options)
+    await message.answer(
+        text='choose what you want to edit',
+        reply_markup=builder.as_markup()
+    )
 
 @router.message(StateFilter(None), Command('create_query'))
 async def enter_email(message: Message, state: FSMContext):
@@ -65,7 +83,7 @@ async def choose_query_interval(message: Message, state: FSMContext):
     ######################333
     # call func to create keyboard
     ###############3333
-    builder = create_interval_choose_keyboard()
+    builder = create_inline_keyboard(interval_options)
 
     await message.answer(
         text='keywords valid. now choose interval',

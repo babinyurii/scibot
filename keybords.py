@@ -2,15 +2,11 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram import types
 
 
-interval_options = [('on mondays', 'mondays',),
-                     ('on fridays', 'fridays'), 
-                     ('last friday of the month',
-                     'last_friday'),]
 
 
-def create_interval_choose_keyboard():
+def create_inline_keyboard(opts):
     builder = InlineKeyboardBuilder()
-    for opt in interval_options:
+    for opt in opts:
         builder.add(
             types.InlineKeyboardButton(
                 text=opt[0],
