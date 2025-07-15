@@ -51,11 +51,21 @@ async def enter_email(message: Message, state: FSMContext):
 
 
 @router.callback_query(StateFilter(None),
-                F.data=='edit_email')
+                F.data.in_(['edit_email', 'edit_query_keywords', 'edit_schedule_interval']))
 async def edit_email(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
-    await callback.message.answer('enter email')
-    await state.set_state(CreateQuery.entering_email)
+    if callback.data == 'edit_email':
+        # get email from db
+        await callback.message.answer('enter email')
+        await state.set_state(CreateQuery.entering_email)
+    elif callback.data == 'edit_query_keywords':
+        # get keywords from db
+        await callback.message.answer('edit keywords')
+        await state.set_state(CreateQuery.entering_query_keywords)
+    else:
+        # get schedule from db
+        await callback.message.answer('edit shedule')
+        await state.set_state(CreateQuery.choosing_query_interval)
 
 @router.message(StateFilter(None), Command('create_query'))
 async def enter_email(message: Message, state: FSMContext):
