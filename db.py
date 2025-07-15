@@ -36,7 +36,7 @@ def check_record_exists(user):
         return session.query(PubMedSearch).filter_by(user_id=user).first()
 
 
-def add_query(user, user_query):
+def create_query(user, user_query):
     with Session(engine) as session:
         query_record = PubMedSearch(user_id=user, 
                                     query_words=user_query['keywords'],
@@ -53,7 +53,7 @@ def get_query(user):
         return search_query.query_words
 
 
-def edit_email(email, user):
+def update_email(user, email):
     with Session(engine) as session:
         user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
         user_record.email = email

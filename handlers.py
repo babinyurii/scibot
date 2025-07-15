@@ -1,13 +1,13 @@
 from aiogram import Bot, Dispatcher, types, Router
 from aiogram.filters import Command, StateFilter
 from aiogram import F
-from db import engine, PubMedSearch, get_query, add_query, edit_email, edit_schedule_interval, edit_query_keywords, check_record_exists
+from db import engine, PubMedSearch, get_query, create_query, update_email, edit_schedule_interval, edit_query_keywords, check_record_exists
 from pubmed_search import search, fetch_details
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm import Session
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
-from fsm_states import CreateQuery
+from fsm_states import CreateQuery, EditQuery
 from filters import EmailFilter, QueryKeywordsFilter
 from keybords import create_inline_keyboard
 
@@ -45,6 +45,28 @@ async def enter_email(message: Message, state: FSMContext):
         text='choose what you want to edit',
         reply_markup=builder.as_markup()
     )
+
+###################333
+# edit funcs
+@router.callback_query(StateFilter(None),
+                F.data=='edit_email')
+async def edit_email(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete()
+    await callback.message.answer('enter email')
+    await state.set_state(EditQuery.editing_email)
+
+
+@router.message(EditQuery.editing_email,
+                EmailFilter())
+async def finish_edit_email(message: Message, state: FSMContext):
+    
+    await state.update_data(email=message.text)
+    update_email(user=message.from_user.id, email=message.text)
+    await message.answer(
+        text='email valid. edited'
+    )
+    await state.clear()
+
 
 @router.message(StateFilter(None), Command('create_query'))
 async def enter_email(message: Message, state: FSMContext):
@@ -112,7 +134,7 @@ async def finish_creating_query(callback: types.CallbackQuery, state: FSMContext
                                    {user_query['keywords']} \
                                        {user_query['interval']}")
     await callback.message.delete()
-    add_query(user=callback.from_user.id,
+    create_query(user=callback.from_user.id,
               user_query=user_query)
     await state.clear()
     # clear state
