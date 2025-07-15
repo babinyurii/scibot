@@ -14,9 +14,7 @@ class PubMedSearch(Base):
     user_id = Column(Integer)
     query_words = Column(String)  
     email = Column(String(256), unique=True)
-    schedule_interval = Column(String(256))
-    # add schedule time
- 
+    schedule_interval = Column(String(256)) 
     
     def __init__(self, user_id, email, query_words, schedule_interval):
         self.user_id = user_id

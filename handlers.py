@@ -43,8 +43,6 @@ async def start(message: Message, state: FSMContext):
 
 @router.message(StateFilter(None), Command('edit_query'))
 async def show_editing_options(message: Message, state: FSMContext):
-
-    # TODO check if record exists: otherwise go to start. think, maybe not usefule
     user_data = await state.get_data()
     if 'editing_data' not in user_data.keys():
         await state.update_data(editing_data=True)
@@ -61,16 +59,16 @@ async def edit_user_record(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
     if callback.data == 'edit_email':
         # get email from db
-        await callback.message.answer('enter email')
+        await callback.message.answer('enter email. send me message with your new email')
         await state.set_state(CreateQuery.entering_email)
     elif callback.data == 'edit_query_keywords':
         # get keywords from db
-        await callback.message.answer('edit keywords')
+        await callback.message.answer('edit keywords. send me message with your new keywords')
         await state.set_state(CreateQuery.entering_query_keywords)
     else:
         # get schedule from db
         builder = create_inline_keyboard(interval_options)
-        await callback.message.answer('now edit shedule', reply_markup=builder.as_markup())
+        await callback.message.answer('now edit shedule. choose amy button:', reply_markup=builder.as_markup())
     
         await state.set_state(CreateQuery.choosing_query_interval)
 
@@ -91,25 +89,16 @@ async def enter_query_keywords(message: Message, state: FSMContext):
 
     if user_data['editing_data']:
         update_email(user=message.from_user.id, email=user_data['email'])
-        await message.answer(
-            text='editing email'
-        )
+        await message.answer(text='editing email')
         await state.clear()
-
     else:
-        await message.answer(
-            text='email valid. now enter query keywords'
-        )
+        await message.answer(text='email valid. now enter query keywords')
         await state.set_state(CreateQuery.entering_query_keywords)
     
 
-
 @router.message(CreateQuery.entering_email)
 async def invalid_email_entered(message: Message):
-    await message.answer(
-        text='no valid email. try again'
-    )
-
+    await message.answer(text='no valid email. try again')
 
 
 @router.message(
@@ -123,19 +112,13 @@ async def choose_query_interval(message: Message, state: FSMContext):
 
     if user_data['editing_data']:
         update_keywords(user=message.from_user.id, query_words=user_data['keywords'])
-        await message.answer(
-            text='editing keywords'
-        )
-        await state.clear()
-        
+        await message.answer(text='editing keywords')
+        await state.clear() 
     else:
         builder = create_inline_keyboard(interval_options)
 
-        await message.answer(
-            text='keywords valid. now choose interval',
-            reply_markup=builder.as_markup(),
-        )
-
+        await message.answer(text='keywords valid. now choose interval',
+                            reply_markup=builder.as_markup())
         await state.set_state(CreateQuery.choosing_query_interval)
 
 
@@ -166,15 +149,12 @@ async def finish_creating_query(callback: types.CallbackQuery, state: FSMContext
 
     await callback.message.delete()
     await state.clear()
-    # clear state
-    # write into db
+  
     
 
 @router.message(CreateQuery.choosing_query_interval)
 async def invalid_query_interval_entered(message: Message):
-    await message.answer(
-        text='not valid interval. please use buttons'
-    )
+    await message.answer(text='not valid interval. please use buttons')
 
 
 

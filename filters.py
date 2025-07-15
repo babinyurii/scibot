@@ -11,7 +11,6 @@ class EmailFilter(BaseFilter):
             validate_email(message.text)
             return True
         except EmailNotValidError as e:
-            print(e)
             return False
 
 
