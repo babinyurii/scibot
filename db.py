@@ -68,6 +68,11 @@ def update_keywords(user, query_words):
         user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
         user_record.query_words = query_words
         session.commit()
+
+def get_records_by_schedule_interval(schedule_interval):
+    with Session(engine) as session:
+        records = session.query(PubMedSearch).filter_by(schedule_interval=schedule_interval)
+    return records
     
 
 

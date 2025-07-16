@@ -7,7 +7,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm import Session
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
-from fsm_states import CreateQuery, EditQuery
+from fsm_states import CreateQuery
 from filters import EmailFilter, QueryKeywordsFilter
 from keybords import create_inline_keyboard
 
