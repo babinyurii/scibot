@@ -17,16 +17,20 @@ logging.basicConfig(level=logging.INFO)
 
 dp = Dispatcher(storage=MemoryStorage())
 
-def search_pubmed_on_monday():
+async def search_pubmed_on_monday(dp: Dispatcher):
     records = get_records_by_schedule_interval('mondays')
-    print(records)
-    pass
+    print('*' * 100)
+    for record in records:
+        print('id: ', record.user_id)
+        print('query_words: ', record.query_words)
+        print('interval: ', record.schedule_interval)
+    
 
 
 def shedule_jobs():
     # scheduler.add_job(send_mes_test, 'interval', seconds=10, args=(dp,))
-    #scheduler.add_job(search_pubmed_on_monday,'interval', seconds=60, args=(dp, ))    
-    pass
+    scheduler.add_job(search_pubmed_on_monday,'interval', seconds=5, args=(dp, ))    
+    
 
 async def main():
     bot = Bot(token=os.getenv('BOT_TOKEN'))

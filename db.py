@@ -71,7 +71,7 @@ def update_keywords(user, query_words):
 
 def get_records_by_schedule_interval(schedule_interval):
     with Session(engine) as session:
-        records = session.query(PubMedSearch).filter_by(schedule_interval=schedule_interval)
+        records = session.query(PubMedSearch).filter_by(schedule_interval=schedule_interval).all()
     return records
     
 
