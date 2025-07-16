@@ -4,7 +4,7 @@ def search(query):
     Entrez.email = 'your.email@example.com'
     handle = Entrez.esearch(db='pubmed', 
                             sort='date', 
-                            retmax='20',
+                            retmax='5',
                             retmode='xml', 
                             term=query)
     results = Entrez.read(handle)
@@ -28,7 +28,7 @@ def get_articles(query_words):
     for i, paper in enumerate(papers['PubmedArticle']):
         print("{}) {}".format(i+1, paper['MedlineCitation']['Article']['ArticleTitle']))
         articles += "{}) {}  ".format(i+1, paper['MedlineCitation']['Article']['ArticleTitle'])
-    return arcticles
+    return articles
 
 
 
