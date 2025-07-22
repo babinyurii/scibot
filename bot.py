@@ -45,8 +45,9 @@ async def search_pubmed_on_schedule(dp: Dispatcher):
 
 
 def shedule_jobs():
-    scheduler.add_job(search_pubmed_on_schedule,'interval', seconds=10, args=(dp, ))    
+    #scheduler.add_job(search_pubmed_on_schedule,'interval', seconds=10, args=(dp, ))    
     # here will be the call of the same function, but with different intervals
+    pass
 
 async def main():
     
