@@ -7,7 +7,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm import Session
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
-from fsm_states import CreateQuery, EditQuery
+from fsm_states import CreateQuery
 from filters import EmailFilter, QueryKeywordsFilter
 from keybords import create_inline_keyboard
 
@@ -23,6 +23,24 @@ edit_query_options = [('email', 'edit_email',),
 
 
 router = Router()
+
+
+@router.message(StateFilter(None), Command(commands=['cancel']))
+async def cmd_cancel_no_state(message: Message, state: FSMContext):
+    await state.set_data({})
+    await message.answer(
+        text='нечего отменять',
+        reply_markup=ReplyKeyboardRemove()
+    )
+
+
+@router.message(Command(commands=['cancel']))
+async def cmd_cancel_no_state(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        text='действие отменено',
+    )
+
 
 @router.message(Command(commands=['start']))
 async def start(message: Message, state: FSMContext):
@@ -155,6 +173,14 @@ async def finish_creating_query(callback: types.CallbackQuery, state: FSMContext
 @router.message(CreateQuery.choosing_query_interval)
 async def invalid_query_interval_entered(message: Message):
     await message.answer(text='not valid interval. please use buttons')
+
+
+
+@router.message(F.text)
+async def invalid_any_message(message: Message):
+    await message.answer(text='dont know such commands. please use the menu')
+
+
 
 
 
