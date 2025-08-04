@@ -86,18 +86,18 @@ async def edit_user_record(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
     if callback.data == 'edit_email':
         previous_email = get_record_email(user=callback.from_user.id,)
-        await callback.message.answer(f'your previous email: {previous_email}. send me message with your new email')
+        await callback.message.answer(f'your previous email is: <b>{previous_email}</b>.\nsend me message with your new email')
         await state.set_state(CreateQuery.entering_email)
 
     elif callback.data == 'edit_query_keywords':
         previous_keywords = get_record_keywords(user=callback.from_user.id,)
-        await callback.message.answer(f'your previous keywords are: {previous_keywords}. send me message with your new keywords')
+        await callback.message.answer(f'your previous keywords are: <b>{previous_keywords}</b>.\nsend me message with your new keywords')
         await state.set_state(CreateQuery.entering_query_keywords)
 
     else:
         previous_interval = get_record_schedule_interval(user=callback.from_user.id,)
         builder = create_inline_keyboard(interval_options)
-        await callback.message.answer(f'your previous schedule is: {previous_interval}. now edit shedule. choose amy button:', reply_markup=builder.as_markup())
+        await callback.message.answer(f'your previous schedule is: <b>{previous_interval}</b>.\nchoose your new schedule:', reply_markup=builder.as_markup())
         await state.set_state(CreateQuery.choosing_query_interval)
 
 
