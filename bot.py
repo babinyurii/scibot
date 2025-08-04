@@ -8,6 +8,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from handlers import router
 from db import get_records_by_schedule_interval
 from pubmed_search import get_articles
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 
 load_dotenv()
 
@@ -16,7 +18,8 @@ scheduler = AsyncIOScheduler()
 logging.basicConfig(level=logging.INFO)
 
 dp = Dispatcher(storage=MemoryStorage())
-bot = Bot(token=os.getenv('BOT_TOKEN'))
+bot = Bot(token=os.getenv('BOT_TOKEN'),
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),)
 
 
 

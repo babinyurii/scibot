@@ -1,7 +1,16 @@
 from aiogram import Bot, Dispatcher, types, Router
 from aiogram.filters import Command, StateFilter
 from aiogram import F
-from db import engine, PubMedSearch, get_query, create_query, update_email, update_schedule_interval, update_keywords, check_record_exists
+from db import (engine, 
+                PubMedSearch, 
+                get_record_keywords, 
+                get_record_email,
+                get_record_schedule_interval,
+                create_query, 
+                update_email, 
+                update_schedule_interval, 
+                update_keywords, 
+                check_record_exists,)
 from pubmed_search import search, fetch_details
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm import Session
@@ -76,18 +85,19 @@ async def show_editing_options(message: Message, state: FSMContext):
 async def edit_user_record(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete()
     if callback.data == 'edit_email':
-        # get email from db
-        await callback.message.answer('enter email. send me message with your new email')
+        previous_email = get_record_email(user=callback.from_user.id,)
+        await callback.message.answer(f'your previous email is: <b>{previous_email}</b>.\nsend me message with your new email')
         await state.set_state(CreateQuery.entering_email)
+
     elif callback.data == 'edit_query_keywords':
-        # get keywords from db
-        await callback.message.answer('edit keywords. send me message with your new keywords')
+        previous_keywords = get_record_keywords(user=callback.from_user.id,)
+        await callback.message.answer(f'your previous keywords are: <b>{previous_keywords}</b>.\nsend me message with your new keywords')
         await state.set_state(CreateQuery.entering_query_keywords)
+
     else:
-        # get schedule from db
+        previous_interval = get_record_schedule_interval(user=callback.from_user.id,)
         builder = create_inline_keyboard(interval_options)
-        await callback.message.answer('now edit shedule. choose amy button:', reply_markup=builder.as_markup())
-    
+        await callback.message.answer(f'your previous schedule is: <b>{previous_interval}</b>.\nchoose your new schedule:', reply_markup=builder.as_markup())
         await state.set_state(CreateQuery.choosing_query_interval)
 
 
