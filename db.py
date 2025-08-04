@@ -45,10 +45,20 @@ def create_query(user, user_query):
         session.commit()
      
 
-def get_query(user):
+def get_record_keywords(user):
     with Session(engine) as session:
         search_query = session.query(PubMedSearch).filter_by(user_id=user).first()
         return search_query.query_words
+
+def get_record_email(user):
+    with Session(engine) as session:
+        search_query = session.query(PubMedSearch).filter_by(user_id=user).first()
+        return search_query.email
+
+def get_record_schedule_interval(user):
+    with Session(engine) as session:
+        search_query = session.query(PubMedSearch).filter_by(user_id=user).first()
+        return search_query.schedule_interval
 
 
 def update_email(user, email):
