@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from fsm_states import CreateQuery
-from filters import EmailFilter, QueryKeywordsFilter
+from filters import EmailFilter, QueryKeywordsFilter, clean_keywords
 from keybords import create_inline_keyboard
 
 
@@ -139,9 +139,11 @@ async def choose_query_interval(message: Message, state: FSMContext):
     user_data = await state.get_data()
 
     if user_data['editing_data']:
-        update_keywords(user=message.from_user.id, query_words=user_data['keywords'])
+        keywords = clean_keywords(user_data['keywords'])
+        update_keywords(user=message.from_user.id, query_words=keywords)
         await message.answer(text='editing keywords')
         await state.clear() 
+
     else:
         builder = create_inline_keyboard(interval_options)
 

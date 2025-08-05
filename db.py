@@ -2,6 +2,8 @@ from sqlalchemy import create_engine, ForeignKey
 from sqlalchemy import Column, Date, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
+import json
+
 
 engine = create_engine('sqlite:///pubmed_search.db', echo = True)
 Base = declarative_base()
@@ -76,7 +78,9 @@ def update_schedule_interval(schedule_interval, user):
 def update_keywords(user, query_words):
     with Session(engine) as session:
         user_record = session.query(PubMedSearch).filter_by(user_id=user).first()
-        user_record.query_words = query_words
+        json_string = json.dumps(query_words)
+
+        user_record.query_words = json_string
         session.commit()
 
 def get_records_by_schedule_interval(schedule_interval):
