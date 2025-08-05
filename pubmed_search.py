@@ -24,10 +24,10 @@ def get_articles(query_words):
     results = search(query_words)
     id_list = results['IdList']
     papers = fetch_details(id_list)
-    articles = ''
+    articles = []
     for i, paper in enumerate(papers['PubmedArticle']):
-        print("{}) {}".format(i+1, paper['MedlineCitation']['Article']['ArticleTitle']))
-        articles += "{}) {}  ".format(i+1, paper['MedlineCitation']['Article']['ArticleTitle'])
+        print("{}".format(paper['MedlineCitation']['Article']['ArticleTitle']))
+        articles.append("{}  ".format(paper['MedlineCitation']['Article']['ArticleTitle']))
     return articles
 
 

@@ -11,7 +11,7 @@ from pubmed_search import get_articles
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 import json
-
+from time import sleep
 
 load_dotenv()
 
@@ -34,7 +34,7 @@ async def search_pubmed_on_schedule(interval):
         print('id: ' * 100, '\n', record.user_id)
         print('query_words: ' * 100, '\n', record.query_words)
         print('interval: ', record.schedule_interval)
-        articles = ''
+        articles = []
         query_words = json.loads(record.query_words)
         #print(query_words.split(','))
         #query_words = query_words.split(',')
@@ -42,8 +42,11 @@ async def search_pubmed_on_schedule(interval):
         for query_word in query_words:
             
             try:
+                sleep(10)
                 print(query_word)
-                articles += get_articles(query_words=query_word)
+                # TODO: тут надо крепить 
+                articles.extend(get_articles(query_words=query_word))
+                print('articles: ' * 100, '\n', articles)
                 #articles = get_articles(query_words=query_word)
             except Exception as e:
                 print ('error: ' * 100, e)
@@ -51,7 +54,13 @@ async def search_pubmed_on_schedule(interval):
                 # into log
         
         # TODO: add check somewhere for message len: 4096 utf chars
-        await bot.send_message(chat_id=record.user_id, text=articles)
+        articles = list(set(articles))
+        articles = [f'{article} \n\n' for article in articles]
+        # TODO: format list to string: articles must be a string
+        articles_for_message = ''
+        for article in articles:
+            articles_for_message += article
+        await bot.send_message(chat_id=record.user_id, text=articles_for_message, parse_mode=ParseMode.HTML)
 
 
 async def search_pubmed_last_fri(dp: Dispatcher,):
