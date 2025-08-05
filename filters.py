@@ -3,6 +3,9 @@ from email_validator import validate_email, EmailNotValidError
 from aiogram.filters import BaseFilter
 
 from aiogram.types import Message
+from string import ascii_letters
+import re
+
 
 class EmailFilter(BaseFilter):
 
@@ -21,10 +24,24 @@ class QueryKeywordsFilter(BaseFilter):
         # if text in this case is one word only still write it into db
         # if user puts only single word or expression
         if ',' not in  message.text:
-            return False
-        keywords = message.text.split(',')
-        keywords = [keyword for keyword in keywords if keyword]
-        if len(keywords) <= 3:
-            return True
+            if re.match("^[A-Za-z0-9]*$", message.text):
+                return True
+            else:
+                return False
         else:
-            return False        
+            keywords = message.text.split(',')
+            keywords = [keyword for keyword in keywords if keyword]
+
+            for keyword in keywords:
+                if re.match("^[A-Za-z0-9]*$", keyword):
+                    continue
+                else:
+                    return False
+                    
+            if len(keywords) <= 3:
+                return True
+            else:
+                return False    
+
+def clean_keywords():
+    pass    
