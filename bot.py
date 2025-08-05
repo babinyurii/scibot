@@ -10,6 +10,8 @@ from db import get_records_by_schedule_interval
 from pubmed_search import get_articles
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+import json
+
 
 load_dotenv()
 
@@ -27,16 +29,16 @@ async def search_pubmed_on_schedule(interval):
     print('#' * 100)
     print('interval from search function: ', interval)
     records = get_records_by_schedule_interval(interval)
-    print('*' * 100)
     # is there need to check if records from db are empty
     for record in records:
-        print('id: ', record.user_id)
-        print('query_words: ', record.query_words)
+        print('id: ' * 100, '\n', record.user_id)
+        print('query_words: ' * 100, '\n', record.query_words)
         print('interval: ', record.schedule_interval)
         articles = ''
-        print(record.query_words.split(','))
-        query_words = record.query_words.split(',')
-        query_words = query_words[0:2]
+        query_words = json.loads(record.query_words)
+        #print(query_words.split(','))
+        #query_words = query_words.split(',')
+        #query_words = query_words[0:2]
         for query_word in query_words:
             
             try:
@@ -70,10 +72,10 @@ def shedule_jobs():
     #scheduler.add_job(search_pubmed_fri, 'cron', day_of_week='fri', hour=12,  args=(dp, ))
     
     # test funcs
-    scheduler.add_job(search_pubmed_last_fri, 'interval', seconds=30,  args=(dp, ))
-    scheduler.add_job(search_pubmed_mon, 'interval', minutes=5, args=(dp, ) )
-    scheduler.add_job(search_pubmed_fri, 'interval', minutes=15,   args=(dp, ))
-
+    #scheduler.add_job(search_pubmed_last_fri, 'interval', seconds=30,  args=(dp, ))
+    scheduler.add_job(search_pubmed_mon, 'interval', seconds=30, args=(dp, ) )
+    #scheduler.add_job(search_pubmed_fri, 'interval', minutes=15,   args=(dp, ))
+    
     
 
 async def main():

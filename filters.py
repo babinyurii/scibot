@@ -20,28 +20,28 @@ class EmailFilter(BaseFilter):
 class QueryKeywordsFilter(BaseFilter):
     
     async def __call__(self, message: Message):
-        # add if ',' not in text:
-        # if text in this case is one word only still write it into db
-        # if user puts only single word or expression
-        if ',' not in  message.text:
-            if re.match("^[A-Za-z0-9]*$", message.text):
+       
+        if ',' not in message.text:
+            if re.match("^[A-Za-z0-9 ]*$", message.text):
                 return True
             else:
                 return False
         else:
             keywords = message.text.split(',')
             keywords = [keyword for keyword in keywords if keyword]
-
             for keyword in keywords:
-                if re.match("^[A-Za-z0-9]*$", keyword):
+                if re.match("^[A-Za-z0-9 ]*$", keyword):
                     continue
                 else:
                     return False
-                    
+
             if len(keywords) <= 3:
                 return True
             else:
                 return False    
 
-def clean_keywords():
-    pass    
+def clean_keywords(keywords):
+    keywords = keywords.split(',')
+    keywords = [keyword for keyword in keywords if keyword]
+    keywords = [keyword.strip() for keyword in keywords]
+    return keywords

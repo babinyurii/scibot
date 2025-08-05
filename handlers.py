@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from aiogram.types import Message, ReplyKeyboardRemove
 from aiogram.fsm.context import FSMContext
 from fsm_states import CreateQuery
-from filters import EmailFilter, QueryKeywordsFilter, update_keywords
+from filters import EmailFilter, QueryKeywordsFilter, clean_keywords
 from keybords import create_inline_keyboard
 
 
