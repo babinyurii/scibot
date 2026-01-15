@@ -23,8 +23,8 @@ from keybords import create_inline_keyboard
 
 interval_options = [('on mondays', 'mondays',),
                      ('on fridays', 'fridays'), 
-                     ('last friday of the month',
-                     'last_friday'),]
+                     ('last friday of the month', 'last_friday'),
+                     ('one 15_mins', '15_mins')]
 
 edit_query_options = [('email', 'edit_email',),
                      ('keywords', 'edit_query_keywords'), 
@@ -57,7 +57,7 @@ async def start(message: Message, state: FSMContext):
     
     if check_record_exists(user=message.from_user.id):
         await message.answer(
-            text="edit query (/edit_query) to edit your existing search config"
+            text="/edit_query to edit your existing search config"
         )
         await state.update_data(editing_data=True)
 
@@ -155,12 +155,12 @@ async def choose_query_interval(message: Message, state: FSMContext):
 @router.message(CreateQuery.entering_query_keywords)
 async def invalid_keywords_entered(message: Message):
     await message.answer(
-        text='not valid keywords. try again'
+        text='keywords are not valid. try again'
     )
 
 
 @router.callback_query(CreateQuery.choosing_query_interval,
-                F.data.in_(['mondays', 'fridays', 'last_friday']))
+                F.data.in_(['mondays', 'fridays', 'last_friday', '15_mins'])) 
 async def finish_creating_query(callback: types.CallbackQuery, state: FSMContext):
     await state.update_data(interval=callback.data)
     user_query = await state.get_data()

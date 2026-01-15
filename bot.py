@@ -72,9 +72,12 @@ async def search_pubmed_mon(dp: Dispatcher,):
 async def search_pubmed_fri(dp: Dispatcher,):
     await search_pubmed_on_schedule(interval='fridays')
 
+async def search_pubmed_on_test_interval(dp: Dispatcher,):
+    await search_pubmed_on_schedule(interval='15_mins')
+
 
 def shedule_jobs():
-    #scheduler.add_job(search_pubmed_on_schedule, 'interval', seconds=15, args=(dp, ))    
+    scheduler.add_job(search_pubmed_on_test_interval, 'interval', minutes=15, args=(dp, ))    
     
     #scheduler.add_job(search_pubmed_last_fri, "cron", day="last fri", args=(dp, ))
     #scheduler.add_job(search_pubmed_mon, 'cron', day_of_week='mon', hour=12, args=(dp, ) )
@@ -82,9 +85,9 @@ def shedule_jobs():
     
     # test funcs
     #scheduler.add_job(search_pubmed_last_fri, 'interval', seconds=30,  args=(dp, ))
-    scheduler.add_job(search_pubmed_mon, 'interval', seconds=30, args=(dp, ) )
+    #scheduler.add_job(search_pubmed_mon, 'interval', seconds=30, args=(dp, ) )
     #scheduler.add_job(search_pubmed_fri, 'interval', minutes=15,   args=(dp, ))
-    
+    pass
     
 
 async def main():
