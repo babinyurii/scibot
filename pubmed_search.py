@@ -3,8 +3,8 @@ from Bio import Entrez
 def search(query):
     Entrez.email = 'your.email@example.com'
     handle = Entrez.esearch(db='pubmed', 
-                            sort='relevance', 
-                            retmax='20',
+                            sort='date', 
+                            retmax='5',
                             retmode='xml', 
                             term=query)
     results = Entrez.read(handle)
@@ -18,6 +18,18 @@ def fetch_details(id_list):
                            id=ids)
     results = Entrez.read(handle)
     return results
+
+
+def get_articles(query_words):
+    results = search(query_words)
+    id_list = results['IdList']
+    papers = fetch_details(id_list)
+    articles = []
+    for i, paper in enumerate(papers['PubmedArticle']):
+        print("{}".format(paper['MedlineCitation']['Article']['ArticleTitle']))
+        articles.append("{}  ".format(paper['MedlineCitation']['Article']['ArticleTitle']))
+    return articles
+
 
 
     
